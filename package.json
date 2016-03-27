@@ -1,0 +1,14 @@
+{
+    "name": "cjdnsplice",
+    "description": "tools for manipulating cjdns switch labels",
+    "version": "0.0.0",
+    "license": "GPL-3+",
+    "repository": "https://github.com/cjdelisle/cjdnsplice",
+    "devDependencies": {
+        "jshint": "~2.9.1"
+    },
+    "scripts": {
+        "lint": "jshint --verbose --config .jshintrc --exclude-path .jshintignore .",
+        "test": "node ./test"
+    }
+}
