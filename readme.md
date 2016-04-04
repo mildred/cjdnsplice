@@ -57,12 +57,14 @@ This will re-encode a label to the encoding *form* specified by **desiredFormNum
 is the same as numbered by `getEncodingForm()`. This may throw an error if the encoding form cannot
 be detected, you pass an invalid **desiredFormNum** or if you try to re-encode the self route
 (`0001`). It will also throw an error if re-encoding a label will make it too long (more than 60
-bits)
+bits). If desiredFormNum is set to `Cjdnsplice.FORM_CANNONICAL` then it will re-encode the label
+into it's *cannonical* form, that is the smallest form which can hold that director.
 
 ```javascript
 Cjdnsplice.reEncode("0000.0000.0000.0015", Cjdnsplice.SCHEME_358, 0) -> '0000.0000.0000.0404'
 Cjdnsplice.reEncode("0000.0000.0000.0015", Cjdnsplice.SCHEME_358, 1) -> '0000.0000.0000.0086'
 Cjdnsplice.reEncode("0000.0000.0000.0015", Cjdnsplice.SCHEME_358, 2) -> '0000.0000.0000.0015'
+Cjdnsplice.reEncode("0000.0000.0000.0404", Cjdnsplice.SCHEME_358, Cjdnsplice.FORM_CANNONICAL) -> '0000.0000.0000.0015'
 ```
 
 ### buildLabel(pathArray)

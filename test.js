@@ -68,10 +68,12 @@ var reEncodeTest = () => {
             while (bits.length < 5) { bits.unshift(0); }
             bits.push(1,0);
             formNum = 1;
-        } else if (bits.lenth <= 8) {
+        } else if (bits.length <= 8) {
             while (bits.length < 8) { bits.unshift(0); }
             bits.push(0,0);
             formNum = 0;
+        } else {
+            throw new Error(bits.length);
         }
         bits.unshift(1);
         while (bits.length < 64) { bits.unshift(0); }
