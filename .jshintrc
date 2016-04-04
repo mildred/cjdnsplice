@@ -12,5 +12,6 @@
     "shadow": false,
     "undef": true,
     "unused": false,
+    "loopfunc": true,
     "esversion": 6
 }
