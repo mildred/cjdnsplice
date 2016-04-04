@@ -1,3 +1,4 @@
+'use strict';
 var Cjdnsplice = require('./index.js');
 
 const PATH = [
@@ -46,6 +47,54 @@ var testBitsToLabel = function () {
     }
 };
 
+const reEncode = (label, type) => {
+    return Cjdnsplice.reEncode(label, Cjdnsplice.SCHEME_358, type);
+};
+
+const cannonicalize = (label) => {
+    return reEncode(label, Cjdnsplice.FORM_CANNONICAL);
+};
+
+var reEncodeTest = () => {
+    for (let i = 0; i < 256; i++) {
+        if (i === 0) { continue; }
+        const bits = (i).toString(2).split('').map((x)=>(Number(x)));
+        let formNum;
+        if (bits.length <= 3) {
+            while (bits.length < 3) { bits.unshift(0); }
+            bits.push(1);
+            formNum = 2;
+        } else if (bits.length <= 5) {
+            while (bits.length < 5) { bits.unshift(0); }
+            bits.push(1,0);
+            formNum = 1;
+        } else if (bits.lenth <= 8) {
+            while (bits.length < 8) { bits.unshift(0); }
+            bits.push(0,0);
+            formNum = 0;
+        }
+        bits.unshift(1);
+        while (bits.length < 64) { bits.unshift(0); }
+        const label = Cjdnsplice._bitsToLabel(bits);
+        let label2 = "";
+        let label3 = "";
+        if (formNum > 0) {
+            label2 = reEncode(label, 0);
+            if (reEncode(label2, formNum) !== label) { throw new Error(); }
+            if (cannonicalize(label2) !== label) { throw new Error(); }
+            if (formNum > 1) {
+                label3 = reEncode(label, 1);
+                if (reEncode(label2, 1) !== label3) { throw new Error(); }
+                if (reEncode(label3, 0) !== label2) { throw new Error(); }
+                if (reEncode(label3, 2) !== label) { throw new Error(); }
+                if (cannonicalize(label3) !== label) { throw new Error(); }
+            }
+        }
+        //console.log(label + " " + label2 + " " + label3);
+    }
+};
+
 buildLabelTest();
 spliceTest();
 testBitsToLabel();
+reEncodeTest();

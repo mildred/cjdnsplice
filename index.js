@@ -108,15 +108,32 @@ var fixLength = function (array, length) {
     while (array.length < length) { array.unshift(0); }
 };
 
+const FORM_CANNONICAL = module.exports.FORM_CANNONICAL = 'FORM_CANNONICAL';
+
 const reEncode = module.exports.reEncode = (labelStr, scheme, desiredFormNum) => {
     const formN = getEncodingForm(labelStr, scheme);
     if (formN < 0) { throw new Error("could not detect encoding form"); }
-    const desiredForm = scheme[desiredFormNum];
-    if (!desiredForm) { throw new Error("invalid desiredFormNum"); }
+
     const label = _labelToBits(labelStr);
     const form = scheme[formN];
     let dir = label.splice(-(form.bitCount + form.prefixLen));
     dir.splice(-form.prefixLen);
+
+    if (desiredFormNum === FORM_CANNONICAL) {
+        desiredFormNum = -1;
+        const bitLen = dir.join('').replace(/^0+/, '').length;
+        for (let i = 0; i < scheme.length; i++) {
+            if (!scheme[i]) { continue; }
+            if (scheme[i].bitCount < bitLen) { continue; }
+            if (desiredFormNum > -1 && scheme[i].bitCount >= scheme[desiredFormNum].bitCount) {
+                continue;
+            }
+            desiredFormNum = i;
+        }
+    }
+    const desiredForm = scheme[desiredFormNum];
+    if (!desiredForm) { throw new Error("invalid desiredFormNum"); }
+
     if (printScheme(scheme) === "SCHEME_358" && (formN === 2 || desiredFormNum === 2)) {
         // Special magic for SCHEME_358 legacy.
         let dirN = Number('0x' + _bitsToLabel(dir).replace(/\./g, ''));
