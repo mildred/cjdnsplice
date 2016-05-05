@@ -96,6 +96,7 @@ var reEncodeTest = () => {
     }
 };
 
+cannonicalize("0000.0000.0000.009e");
 buildLabelTest();
 spliceTest();
 testBitsToLabel();

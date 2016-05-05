@@ -119,38 +119,48 @@ const reEncode = module.exports.reEncode = (labelStr, scheme, desiredFormNum) =>
     let dir = label.splice(-(form.bitCount + form.prefixLen));
     dir.splice(-form.prefixLen);
 
+    let desiredFormN;
     if (desiredFormNum === FORM_CANNONICAL) {
-        desiredFormNum = -1;
+        desiredFormN = -1;
         const bitLen = dir.join('').replace(/^0+/, '').length;
         for (let i = 0; i < scheme.length; i++) {
             if (!scheme[i]) { continue; }
             if (scheme[i].bitCount < bitLen) { continue; }
-            if (desiredFormNum > -1 && scheme[i].bitCount >= scheme[desiredFormNum].bitCount) {
+            if (desiredFormN > -1 && scheme[i].bitCount >= scheme[desiredFormN].bitCount) {
                 continue;
             }
-            desiredFormNum = i;
+            desiredFormN = i;
         }
+    } else {
+        desiredFormN = desiredFormNum;
     }
-    const desiredForm = scheme[desiredFormNum];
+    const desiredForm = scheme[desiredFormN];
     if (!desiredForm) { throw new Error("invalid desiredFormNum"); }
-
-    if (printScheme(scheme) === "SCHEME_358" && (formN === 2 || desiredFormNum === 2)) {
+    if (printScheme(scheme) === "SCHEME_358") {
         // Special magic for SCHEME_358 legacy.
-        let dirN = Number('0x' + _bitsToLabel(dir).replace(/\./g, ''));
-        if (formN === 2) {
-            switch (dirN) {
-                case 0: throw new Error("cannot re-encode self-route");
-                case 1: dirN = 0; break;
-                default: dirN--; break;
-            }
+        if (desiredFormN === 2 && dir.join('') === '00111') {
+            // This is a special case where encodingForm 2 looks usable but it is not
+            // because number 0001 is reserved for the self-route.
+            desiredFormN = 1;
         }
-        if (desiredFormNum === 2) {
-            switch (dirN) {
-                case 0: dirN = 1; break;
-                default: dirN++; break;
+        if (formN === 2 || desiredFormN === 2) {
+
+            let dirN = Number('0x' + _bitsToLabel(dir).replace(/\./g, ''));
+            if (formN === 2) {
+                switch (dirN) {
+                    case 0: throw new Error("cannot re-encode self-route");
+                    case 1: dirN = 0; break;
+                    default: dirN--; break;
+                }
             }
+            if (desiredFormN === 2) {
+                switch (dirN) {
+                    case 0: dirN = 1; break;
+                    default: dirN++; break;
+                }
+            }
+            dir = dirN.toString(2).split('').map((x)=>(Number(x)));
         }
-        dir = dirN.toString(2).split('').map((x)=>(Number(x)));
     }
     fixLength(dir, desiredForm.bitCount);
     label.push.apply(label, dir);
