@@ -184,7 +184,7 @@ const reEncode = module.exports.reEncode = (labelStr, scheme, desiredFormNum) =>
         throw new Error("Failed to reencode " + labelStr + " to form " + desiredFormNum +
             " in scheme " + printScheme(scheme));
     }
-}
+};
 
 const isOneHop = module.exports.isOneHop = (label, encodingScheme) => {
     const formNum = getEncodingForm(label, encodingScheme);
