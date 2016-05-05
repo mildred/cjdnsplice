@@ -110,7 +110,7 @@ var fixLength = function (array, length) {
 
 const FORM_CANNONICAL = module.exports.FORM_CANNONICAL = 'FORM_CANNONICAL';
 
-const reEncode = module.exports.reEncode = (labelStr, scheme, desiredFormNum) => {
+const reEncode0 = (labelStr, scheme, desiredFormNum) => {
     const formN = getEncodingForm(labelStr, scheme);
     if (formN < 0) { throw new Error("could not detect encoding form"); }
 
@@ -138,7 +138,7 @@ const reEncode = module.exports.reEncode = (labelStr, scheme, desiredFormNum) =>
     if (!desiredForm) { throw new Error("invalid desiredFormNum"); }
     if (printScheme(scheme) === "SCHEME_358") {
         // Special magic for SCHEME_358 legacy.
-        if (desiredFormN === 2 && dir.join('') === '00111') {
+        if (desiredFormN === 2 && dir.join('') === '00111' || dir.join('') === '00000111') {
             // This is a special case where encodingForm 2 looks usable but it is not
             // because number 0001 is reserved for the self-route.
             desiredFormN = 1;
@@ -175,6 +175,16 @@ const reEncode = module.exports.reEncode = (labelStr, scheme, desiredFormNum) =>
     }
     return out;
 };
+
+const reEncode = module.exports.reEncode = (labelStr, scheme, desiredFormNum) => {
+    try {
+        return reEncode0(labelStr, scheme, desiredFormNum);
+    } catch (e) {
+        console.log(e.stack);
+        throw new Error("Failed to reencode " + labelStr + " to form " + desiredFormNum +
+            " in scheme " + printScheme(scheme));
+    }
+}
 
 const isOneHop = module.exports.isOneHop = (label, encodingScheme) => {
     const formNum = getEncodingForm(label, encodingScheme);
