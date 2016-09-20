@@ -61,7 +61,7 @@ const bitsify = (num, width) => {
     if (list.length > width) { throw new Error(); }
     while (list.length < width) { list.unshift(0); }
     return list;
-}
+};
 
 const reEncodeTest = () => {
     for (let schemeName in Cjdnsplice.SCHEMES) {
@@ -92,8 +92,8 @@ const reEncodeTest = () => {
                     }
                     if (Cjdnsplice.reEncode(sml, scheme, f) !== med) { throw new Error(); }
                     if (Cjdnsplice.reEncode(med, scheme, ff) !== sml) { throw new Error(); }
-                })
-            })
+                });
+            });
         }
     }
 };
