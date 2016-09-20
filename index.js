@@ -73,14 +73,29 @@ const _spliceBits = module.exports._spliceBits = function () {
     return result;
 };
 
-var SCHEME_358 = module.exports.SCHEME_358 = [
-    {"bitCount":8,"prefix":"00000000","prefixLen":2},
-    {"bitCount":5,"prefix":"00000002","prefixLen":2},
-    {"bitCount":3,"prefix":"00000001","prefixLen":1}
-];
-const SCHEME_358_STR = JSON.stringify(SCHEME_358);
+var SCHEMES = module.exports.SCHEMES = Object.freeze({
+    f4: [ { bitCount: 4, prefix: "", prefixLen: 0 } ],
+    f8: [ { bitCount: 8, prefix: "", prefixLen: 0 } ],
+    v48: [
+        { bitCount: 4, prefix: "01", prefixLen: 1 },
+        { bitCount: 8, prefix: "00", prefixLen: 1 },
+    ],
+    v358: [
+        { bitCount: 3, prefix: "01", prefixLen: 1 },
+        { bitCount: 5, prefix: "02", prefixLen: 2 },
+        { bitCount: 8, prefix: "00", prefixLen: 2 }
+    ],
+    v37: [
+        { bitCount: 3, prefix: "01", prefixLen: 1 },
+        { bitCount: 7, prefix: "00", prefixLen: 1 }
+    ]
+});
+
 const printScheme = module.exports.printScheme = (scheme) => {
-    if (JSON.stringify(scheme) === SCHEME_358_STR) { return "SCHEME_358"; }
+    const schemeStr = JSON.stringify(scheme);
+    for (let scheme in SCHEMES) {
+        if (schemeStr === JSON.stringify(SCHEMES[scheme])) { return scheme; }
+    }
     return JSON.stringify(scheme);
 };
 
@@ -117,7 +132,7 @@ const reEncode0 = (labelStr, scheme, desiredFormNum) => {
     const label = _labelToBits(labelStr);
     const form = scheme[formN];
     let dir = label.splice(-(form.bitCount + form.prefixLen));
-    dir.splice(-form.prefixLen);
+    dir.splice(dir.length - form.prefixLen);
 
     let desiredFormN;
     if (desiredFormNum === FORM_CANNONICAL) {
@@ -136,24 +151,24 @@ const reEncode0 = (labelStr, scheme, desiredFormNum) => {
     }
     const desiredForm = scheme[desiredFormN];
     if (!desiredForm) { throw new Error("invalid desiredFormNum"); }
-    if (printScheme(scheme) === "SCHEME_358") {
+    if (printScheme(scheme) === "v358") {
         // Special magic for SCHEME_358 legacy.
-        if (desiredFormN === 2 && dir.join('') === '00111' || dir.join('') === '00000111') {
+        if (desiredFormN === 0 && dir.join('') === '00111' || dir.join('') === '00000111') {
             // This is a special case where encodingForm 2 looks usable but it is not
             // because number 0001 is reserved for the self-route.
             desiredFormN = 1;
         }
-        if (formN === 2 || desiredFormN === 2) {
+        if (formN === 0 || desiredFormN === 0) {
 
             let dirN = Number('0x' + _bitsToLabel(dir).replace(/\./g, ''));
-            if (formN === 2) {
+            if (formN === 0) {
                 switch (dirN) {
                     case 0: throw new Error("cannot re-encode self-route");
                     case 1: dirN = 0; break;
                     default: dirN--; break;
                 }
             }
-            if (desiredFormN === 2) {
+            if (desiredFormN === 0) {
                 switch (dirN) {
                     case 0: dirN = 1; break;
                     default: dirN++; break;
