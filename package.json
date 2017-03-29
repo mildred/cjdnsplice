@@ -1,14 +1,16 @@
 {
-    "name": "cjdnsplice",
-    "description": "tools for manipulating cjdns switch labels",
-    "version": "0.2.0",
-    "license": "GPL-3.0+",
-    "repository": "https://github.com/cjdelisle/cjdnsplice",
-    "devDependencies": {
-        "jshint": "~2.9.1"
-    },
-    "scripts": {
-        "lint": "jshint --verbose --config .jshintrc --exclude-path .jshintignore .",
-        "test": "node ./test"
-    }
+  "name": "cjdnsplice",
+  "description": "tools for manipulating cjdns switch labels",
+  "version": "0.2.0",
+  "license": "GPL-3.0+",
+  "repository": "https://github.com/cjdelisle/cjdnsplice",
+  "devDependencies": {
+    "flow-bin": "^0.42.0",
+    "jshint": "~2.9.1"
+  },
+  "scripts": {
+    "lint": "jshint --verbose --config .jshintrc --exclude-path .jshintignore .",
+    "test": "node ./test",
+    "flow": "./node_modules/.bin/flow"
+  }
 }

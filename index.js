@@ -1,5 +1,4 @@
-#!/usr/bin/env node
-/* -*- Mode:js */
+/*@flow*/
 /*
  * You may redistribute this program and/or modify it under the terms of
  * the GNU General Public License as published by the Free Software Foundation,
@@ -20,7 +19,7 @@ var CHAR_TO_BITS = {};
     CHAR_TO_BITS[chr] = Number('0x1'+chr).toString(2).substring(1).split('').map((x)=>(Number(x)));
 });
 
-var _labelToBits = module.exports._labelToBits = function (label) {
+var _labelToBits = module.exports._labelToBits = function (label /*:string*/) {
     var out = [];
     label = label.replace(/\./g, '');
     for (var i = 0; i < label.length; i++) {
@@ -29,7 +28,7 @@ var _labelToBits = module.exports._labelToBits = function (label) {
     return out;
 };
 
-var bitsToChar = function (array) {
+var bitsToChar = function (array /*:Array<number>*/) {
     var num = 0;
     for (var i = 0; i < 4; i++) {
         num |= (array.pop() << i);
@@ -37,7 +36,7 @@ var bitsToChar = function (array) {
     return num.toString(16);
 };
 
-var _bitsToLabel = module.exports._bitsToLabel = function (array) {
+var _bitsToLabel = module.exports._bitsToLabel = function (array /*:Array<number>*/) {
     array = array.slice(0);
     var chars = [];
     for (var i = 0; i < 16; i++) {
@@ -73,6 +72,10 @@ const _spliceBits = module.exports._spliceBits = function () {
     return result;
 };
 
+/*::
+type EncodingForm = { bitCount: number, prefix: string, prefixLen: number };
+type EncodingScheme = Array<EncodingForm>;
+*/
 var SCHEMES = module.exports.SCHEMES = Object.freeze({
     f4: [ { bitCount: 4, prefix: "", prefixLen: 0 } ],
     f8: [ { bitCount: 8, prefix: "", prefixLen: 0 } ],
@@ -91,7 +94,7 @@ var SCHEMES = module.exports.SCHEMES = Object.freeze({
     ]
 });
 
-const printScheme = module.exports.printScheme = (scheme) => {
+const printScheme = module.exports.printScheme = (scheme /*:EncodingScheme*/) => {
     const schemeStr = JSON.stringify(scheme);
     for (let scheme in SCHEMES) {
         if (schemeStr === JSON.stringify(SCHEMES[scheme])) { return scheme; }
@@ -100,11 +103,13 @@ const printScheme = module.exports.printScheme = (scheme) => {
 };
 
 const splice = module.exports.splice = function () {
-    const bits = Array.apply(null, arguments).map((x) => (_labelToBits(x)));
+    const bits = Array.prototype.slice.call(arguments).map((x) => (_labelToBits(x)));
     return _bitsToLabel(_spliceBits.apply(null, bits));
 };
 
-var getEncodingForm = module.exports.getEncodingForm = function (label, scheme) {
+var getEncodingForm = module.exports.getEncodingForm =
+    function (label /*:string | Array<number>*/, scheme /*:EncodingScheme*/)
+{
     if (typeof(label) === 'string') {
         label = _labelToBits(label);
     }
@@ -123,9 +128,9 @@ var fixLength = function (array, length) {
     while (array.length < length) { array.unshift(0); }
 };
 
-const FORM_CANNONICAL = module.exports.FORM_CANNONICAL = 'FORM_CANNONICAL';
+const FORM_CANNONICAL = module.exports.FORM_CANNONICAL = -5000;
 
-const reEncode0 = (labelStr, scheme, desiredFormNum) => {
+const reEncode0 = (labelStr /*:string*/, scheme /*EncodingScheme*/, desiredFormNum /*:number*/) => {
     const formN = getEncodingForm(labelStr, scheme);
     if (formN < 0) { throw new Error("could not detect encoding form"); }
 
@@ -191,7 +196,8 @@ const reEncode0 = (labelStr, scheme, desiredFormNum) => {
     return out;
 };
 
-const reEncode = module.exports.reEncode = (labelStr, scheme, desiredFormNum) => {
+const reEncode = module.exports.reEncode =
+    (labelStr /*:string*/, scheme /*:EncodingScheme*/, desiredFormNum /*:number*/) => {
     try {
         return reEncode0(labelStr, scheme, desiredFormNum);
     } catch (e) {
@@ -201,7 +207,8 @@ const reEncode = module.exports.reEncode = (labelStr, scheme, desiredFormNum) =>
     }
 };
 
-const isOneHop = module.exports.isOneHop = (label, encodingScheme) => {
+const isOneHop = module.exports.isOneHop =
+    (label /*:string*/ , encodingScheme /*:EncodingScheme*/) => {
     const formNum = getEncodingForm(label, encodingScheme);
     if (formNum < 0) { throw new Error("not a valid label for the given scheme"); }
     const form = encodingScheme[formNum];
@@ -213,8 +220,10 @@ const isOneHop = module.exports.isOneHop = (label, encodingScheme) => {
     return true;
 };
 
-// [ { labelP: "", key: "", encodingScheme: [], labelN: "" }, { ... }]
-const buildLabel = module.exports.buildLabel = (pathArray) => {
+/*::
+type PathHop = { labelP?: string, key?: string, encodingScheme: EncodingScheme, labelN?: string };
+*/
+const buildLabel = module.exports.buildLabel = (pathArray /*:Array<PathHop>*/) => {
     const path = [];
     pathArray.forEach(function (hop, i) {
         let labelN = hop.labelN;
